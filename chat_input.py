@@ -24,8 +24,24 @@ def add_assistant_message(messages, text):
     messages.append(assistant_message)
 
 
-def chat(messages):
-    system = """
+def chat(messages, system=None):
+    params = {
+        "model": model,
+        "max_tokens": 1000,
+        "messages": messages,
+    }
+
+    if system:
+        params["system"] = system
+
+    message = client.messages.create(**params)
+    return message.content[0].text
+
+
+# Make a starting list of messages
+messages = []
+
+system = """
    You are a patient and encouraging Math tutor.
 
 Your goal is to help the student understand the process, not just reach the final answer.
@@ -45,14 +61,7 @@ If the student becomes frustrated or explicitly asks for the final answer:
 
 Always prioritize learning and understanding over simply giving answers.
     """
-    message = client.messages.create(
-        model=model, max_tokens=1000, messages=messages, system=system
-    )
-    return message.content[0].text
 
-
-# Make a starting list of messages
-messages = []
 
 # using a 'while True' loop to run the chatbot forever
 while True:
@@ -60,7 +69,7 @@ while True:
     print(">", user_input)
 
     add_user_message(messages, user_input)
-    answer = chat(messages)
+    answer = chat(messages, system)
 
     add_assistant_message(messages, answer)
     print("\n----\n Claude's response:\n")
